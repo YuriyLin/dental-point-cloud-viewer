@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PLY Test - No React</title>
+    <style>
+        body { margin: 0; background: #000; overflow: hidden; }
+        canvas { display: block; }
+        #info { position: fixed; top: 10px; left: 10px; color: lime; font: 14px monospace; z-index: 10; }
+    </style>
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+            "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+        }
+    }
+    </script>
+</head>
+<body>
+<div id="info">Loading PLY...</div>
+<script type="module">
+import * as THREE from 'three';
+import { PLYLoader } from 'three/addons/loaders/PLYLoader.js';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const info = document.getElementById('info');
+
+// Scene
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x222222);
+
+// Camera
+const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 10000);
+camera.position.set(0, 0, 120);
+
+// Renderer
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(window.devicePixelRatio);
+document.body.appendChild(renderer.domElement);
+
+// Controls
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+
+// Lights
+scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+const dir = new THREE.DirectionalLight(0xffffff, 0.8);
+dir.position.set(0, 100, 50);
+scene.add(dir);
+
+// Reference red cube at origin
+const cube = new THREE.Mesh(
+    new THREE.BoxGeometry(5, 5, 5),
+    new THREE.MeshBasicMaterial({ color: 0xff0000 })
+);
+scene.add(cube);
+info.textContent = 'Red cube added. Loading PLY...';
+
+// Load PLY - try the latest result file
+const loader = new PLYLoader();
+loader.load('/results/1ea742cd-b185-49e7-b741-d2bd7722f2a5_mesh_original_mesh.ply', (geometry) => {
+    info.textContent = `PLY loaded: ${geometry.attributes.position.count} verts`;
+
+    // Un-index
+    const geo = geometry.index ? geometry.toNonIndexed() : geometry;
+    geo.computeVertexNormals();
+    geo.center();
+    geo.computeBoundingSphere();
+    const r = geo.boundingSphere.radius;
+
+    // Try 3 different materials simultaneously to see which one works
+    // 1. MeshNormalMaterial (no lighting needed, rainbow colors)
+    const meshNormal = new THREE.Mesh(geo.clone(), new THREE.MeshNormalMaterial({ side: THREE.DoubleSide }));
+    scene.add(meshNormal);
+
+    // Position camera
+    camera.position.set(0, 0, r * 2.5);
+    camera.updateProjectionMatrix();
+    controls.target.set(0, 0, 0);
+    controls.update();
+
+    info.textContent = `PLY OK: ${geo.attributes.position.count} verts | R=${r.toFixed(1)} | Colors: ${!!geo.attributes.color}`;
+}, (xhr) => {
+    if (xhr.total) info.textContent = `Loading: ${(xhr.loaded / xhr.total * 100).toFixed(0)}%`;
+}, (err) => {
+    info.textContent = `ERROR: ${err.message || err}`;
+});
+
+// Animate
+function animate() {
+    requestAnimationFrame(animate);
+    controls.update();
+    renderer.render(scene, camera);
+}
+animate();
+
+window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,7 @@
+{
+  "name": "CHOICE Biotech - AI Dental Aesthetics",
+  "description": "Enterprise-grade AI dental technology platform featuring automated tooth segmentation and aesthetic analysis.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
