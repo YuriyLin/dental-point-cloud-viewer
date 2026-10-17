@@ -9,7 +9,7 @@
 
 import { AnalysisResponse } from "../types";
 
-const API_BASE_URL = "http://localhost:8000";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
 
 // Extended response type from enhanced backend
 export interface SegmentationResult extends AnalysisResponse {
@@ -18,6 +18,8 @@ export interface SegmentationResult extends AnalysisResponse {
     metadata_url: string;
     mesh_url?: string;
     has_mesh: boolean;
+    jaw_type?: 'upper' | 'lower';
+    num_points?: number;
     teeth?: Array<{
         fdi: number;
         name: string;
@@ -34,7 +36,9 @@ export interface SegmentationResult extends AnalysisResponse {
  * 2. Trigger segmentation at /api/segment/{task_id}
  * 3. Return the results with download URLs
  */
-export const segmentSTL = async (file: File): Promise<SegmentationResult> => {
+export type JawType = 'auto' | 'upper' | 'lower';
+
+export const segmentSTL = async (file: File, jawType: JawType = 'auto'): Promise<SegmentationResult> => {
     // Step 1: Upload the file
     const formData = new FormData();
     formData.append("file", file);
@@ -52,7 +56,8 @@ export const segmentSTL = async (file: File): Promise<SegmentationResult> => {
     const { task_id } = await uploadRes.json();
 
     // Step 2: Run segmentation (fast mode without mesh generation)
-    const segmentRes = await fetch(`${API_BASE_URL}/api/segment/${task_id}`, {
+    const query = jawType === 'auto' ? '' : `?jaw_type=${jawType}`;
+    const segmentRes = await fetch(`${API_BASE_URL}/api/segment/${task_id}${query}`, {
         method: "POST",
     });
 
@@ -72,7 +77,9 @@ export const segmentSTL = async (file: File): Promise<SegmentationResult> => {
         download_url: `${API_BASE_URL}${data.download_url}`,
         metadata_url: `${API_BASE_URL}${data.metadata_url}`,
         mesh_url: data.mesh_url ? `${API_BASE_URL}${data.mesh_url}` : undefined,
-        has_mesh: data.has_mesh || false
+        has_mesh: data.has_mesh || false,
+        jaw_type: data.jaw_type,
+        num_points: data.num_points,
     };
 };
 

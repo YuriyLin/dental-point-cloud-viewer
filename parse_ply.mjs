@@ -1,7 +1,12 @@
 import * as fs from 'fs';
 import { PLYLoader } from 'three/examples/jsm/loaders/PLYLoader.js';
 
-const buffer = fs.readFileSync('/home/yuxuan/3DTeethSegmetation/Pointcept/results/1ea742cd-b185-49e7-b741-d2bd7722f2a5_mesh_original_mesh.ply');
+const inputPath = process.argv[2];
+if (!inputPath) {
+  throw new Error('Usage: node parse_ply.mjs <path-to-ply>');
+}
+
+const buffer = fs.readFileSync(inputPath);
 const loader = new PLYLoader();
 const geometry = loader.parse( buffer.buffer );
 

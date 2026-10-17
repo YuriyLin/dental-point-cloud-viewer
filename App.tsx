@@ -1,111 +1,92 @@
-import React, { useState } from 'react';
-import Navbar from './components/Navbar';
-import Hero from './components/Hero';
-import Features from './components/Features';
-import InteractiveViewer from './components/InteractiveViewer';
-import Realize from './components/Realize';
+import { useEffect, useState } from 'react';
+import { Activity, CircleCheck, CircleX, ScanLine } from 'lucide-react';
 import AIDemo from './components/AIDemo';
-import Footer from './components/Footer';
+import InteractiveViewer from './components/InteractiveViewer';
+import { checkHealth } from './services/apiService';
+import type { SegmentationResult } from './services/apiService';
+import './app.css';
 
 function App() {
-  const [segmentResult, setSegmentResult] = useState<any>(null);
+  const [segmentResult, setSegmentResult] = useState<SegmentationResult | null>(null);
+  const [apiStatus, setApiStatus] = useState<'checking' | 'ready' | 'offline'>('checking');
+
+  useEffect(() => {
+    checkHealth()
+      .then((health) => setApiStatus(health.model_loaded ? 'ready' : 'offline'))
+      .catch(() => setApiStatus('offline'));
+  }, []);
+
+  const statusLabel = {
+    checking: '檢查推論服務',
+    ready: '推論服務就緒',
+    offline: '推論服務未連線',
+  }[apiStatus];
 
   return (
-    <main className="min-h-screen selection:bg-[#ffc93b]/30 selection:text-[#3c3c3c]">
-      <Navbar />
-      <Hero />
+    <div className="app-shell">
+      <a className="skip-link" href="#main-content">跳至主要內容</a>
 
-      {/* Brand Ethos / Banner */}
-      <div className="bg-[#ffc93b] py-12">
-        <div className="max-w-7xl mx-auto px-6 overflow-hidden">
-          <div className="flex whitespace-nowrap gap-24 animate-[marquee_30s_linear_infinite] text-2xl font-black text-[#3c3c3c]/30 uppercase tracking-[12px]">
-            <span>Artificial Intelligence</span>
-            <span>Precision Dentistry</span>
-            <span>Modern Aesthetics</span>
-            <span>Clinical Excellence</span>
-            <span>Human-Centered Tech</span>
-            <span>Artificial Intelligence</span>
-            <span>Precision Dentistry</span>
-            <span>Modern Aesthetics</span>
-          </div>
+      <header className="topbar">
+        <a className="wordmark" href="/" aria-label="3D 牙齒分割工作台首頁">
+          <span className="wordmark-mark"><ScanLine size={18} aria-hidden="true" /></span>
+          <span>3D DENTAL SEGMENTATION</span>
+        </a>
+        <div className={`service-status service-status--${apiStatus}`} role="status" aria-live="polite">
+          {apiStatus === 'ready' && <CircleCheck size={15} aria-hidden="true" />}
+          {apiStatus === 'offline' && <CircleX size={15} aria-hidden="true" />}
+          {apiStatus === 'checking' && <Activity size={15} aria-hidden="true" />}
+          <span>{statusLabel}</span>
         </div>
-      </div>
+      </header>
 
-      <Features />
-
-      <Realize />
-
-      <AIDemo onResult={setSegmentResult} />
-
-      <InteractiveViewer
-        key={`viewer-${segmentResult?.task_id || 'default'}`}
-        taskId={segmentResult?.task_id}
-      />
-
-      {/* Trust Quote Section */}
-      <section className="py-24 bg-gray-50/50">
-        <div className="max-w-4xl mx-auto px-6 text-center space-y-10">
-          <div className="w-16 h-1 bg-[#ffc93b] mx-auto rounded-full"></div>
-          <blockquote className="text-2xl md:text-3xl font-light italic text-[#3c3c3c] leading-relaxed">
-            "巧醫的技術不僅是數位轉型，更是一種診間的溫度。它讓醫師與病患之間，多了一層清晰且值得信賴的連結。"
-          </blockquote>
-          <div className="flex flex-col items-center gap-2">
-            <div className="w-16 h-16 rounded-full bg-gray-100 overflow-hidden shadow-sm">
-              <img src="https://picsum.photos/id/64/100/100" alt="Doctor" />
-            </div>
-            <div className="font-bold text-[#3c3c3c]">林醫師</div>
-            <div className="text-sm text-gray-400">知名連鎖牙醫診所 院長</div>
+      <main id="main-content">
+        <section className="intro-section" aria-labelledby="page-title">
+          <div className="intro-copy">
+            <p className="eyebrow">LOCAL INFERENCE WORKBENCH / 01</p>
+            <h1 id="page-title">口內掃描<br /><span>AI 自動分割</span></h1>
+            <p className="intro-lede">匯入口內掃描模型，執行牙齒語意分割，並在同一個工作區檢視預測點雲與牙位結果。</p>
           </div>
-        </div>
-      </section>
-
-      {/* CTA Final */}
-      <section className="pb-32 px-6">
-        <div className="max-w-7xl mx-auto bg-[#3c3c3c] rounded-[40px] p-12 md:p-24 text-center space-y-8 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-96 h-96 bg-[#ffc93b]/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2"></div>
-          <div className="absolute bottom-0 left-0 w-64 h-64 bg-[#ff8538]/10 rounded-full blur-[80px] translate-y-1/2 -translate-x-1/2"></div>
-
-          <h2 className="text-4xl md:text-5xl font-bold text-white relative z-10">
-            開啟您的 <span className="text-[#ffc93b]">數位美學</span> 之旅
-          </h2>
-          <p className="text-gray-400 text-lg max-w-xl mx-auto relative z-10">
-            加入全球數百家領先診所的行列，讓 AI 成為您最可靠的診療助手。
-          </p>
-          <div className="flex justify-center gap-4 pt-4 relative z-10">
-            <a
-              href="https://line.me/R/ti/p/@373qcikv?oat_content=url"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="bg-[#ffc93b] text-[#3c3c3c] px-10 py-5 rounded-2xl font-bold hover:bg-[#ffb500] transition-all shadow-2xl shadow-yellow-500/20 active:scale-95 inline-block"
-            >
-              立即免費預約演示
-            </a>
+          <div className="intro-rail" aria-label="工作流程">
+            <div className="rail-step rail-step--active"><span>01</span><strong>匯入</strong><small>STL / PLY / OBJ</small></div>
+            <div className="rail-line" />
+            <div className="rail-step"><span>02</span><strong>分割</strong><small>本地模型推論</small></div>
+            <div className="rail-line" />
+            <div className="rail-step"><span>03</span><strong>檢視</strong><small>3D 預測結果</small></div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <Footer />
+        <section className="workbench-section" aria-labelledby="workbench-title">
+          <div className="section-heading">
+            <div><p className="eyebrow">WORKSPACE / INPUT + OUTPUT</p><h2 id="workbench-title">建立一次分割任務</h2></div>
+            <p className="section-note">結果只在本機開發服務中處理，不代表醫療診斷。</p>
+          </div>
+          <div className="workbench-grid">
+            <AIDemo onResult={setSegmentResult} />
+            <aside className="method-panel" aria-labelledby="method-title">
+              <div className="panel-kicker"><span className="status-dot" /> PIPELINE</div>
+              <h3 id="method-title">從掃描到可視化</h3>
+              <p>目前工作台把模型輸出保留成可檢查的中間結果，方便確認每一步是否完成。</p>
+              <ol className="method-list">
+                <li><span>01</span><div><strong>檔案驗證</strong><small>確認格式與匯入內容</small></div></li>
+                <li><span>02</span><div><strong>點雲分割</strong><small>使用本地 segmentation checkpoint</small></div></li>
+                <li><span>03</span><div><strong>FDI 標籤</strong><small>整理牙位與 confidence</small></div></li>
+                <li><span>04</span><div><strong>3D 檢視</strong><small>旋轉、縮放與切換表示方式</small></div></li>
+              </ol>
+              <div className="method-footnote"><span>MODEL OUTPUT</span><strong>17 classes / FDI mapping</strong></div>
+            </aside>
+          </div>
+        </section>
 
-      <style>{`
-        @keyframes marquee {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(-50%); }
-        }
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 4px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: transparent;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: #e5e7eb;
-          border-radius: 10px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: #ffc93b;
-        }
-      `}</style>
-    </main>
+        <InteractiveViewer
+          key={`viewer-${segmentResult?.task_id || 'empty'}`}
+          taskId={segmentResult?.task_id}
+          hasMesh={segmentResult?.has_mesh}
+          jawType={segmentResult?.jaw_type}
+        />
+      </main>
+
+      <footer className="app-footer"><span>LOCAL DEMO</span><span>3D SEGMENTATION / VISUALIZATION</span><span>NO EXTERNAL BRANDING</span></footer>
+    </div>
   );
 }
 

@@ -4,9 +4,9 @@
 
 **Goal:** Build a new section in the React frontend featuring an interactive 3D dental model viewer that renders colorized AI predictions (Feature 5), displays real-time English tooth names via mouse hover raycasting (Feature 1), and provides buttons to extract or isolate specific teeth/gums using metadata labels (Feature 2).
 
-**Architecture:** We will create a new standalone React component `InteractiveViewer.tsx` within the existing `AI-Dental-3D-Segmentation-DEMO` app. It will use standard `three` library for WebGL rendering via an imperative hook mounting to a `div` ref. Hover events will be captured via `Raycaster`, looking up the intersected triangle's face index against the imported JSON metadata `upper_seg_label` array to map to FDI and English names displayed via an absolute positioned React tooltip. To isolate teeth vs gums, we will rewrite the PLY `BufferGeometry`'s `color` array: setting face vertices of unselected parts to 0 alpha or matching background color (if PLY doesn't support vertex alpha out-of-the-box, we'll assign an invisible material color or filter geometry indexes).
+**Architecture:** This historical plan describes the `InteractiveViewer.tsx` implementation in the `dental-point-cloud-viewer` app. It uses the `three` library for WebGL rendering via an imperative hook mounted to a `div` ref. Hover events are captured via `Raycaster`, looking up the intersected triangle's face index against metadata to map to FDI and English names. The current implementation has been simplified into the mesh / point-cloud workbench described in the repository README.
 
-**Tech Stack:** React 19, Vite, Tailwind CSS, `three` (including `PLYLoader`, `OrbitControls`).
+**Tech Stack:** React 19, Vite, TypeScript, `three` (including `PLYLoader`, `OrbitControls`) and project-local CSS tokens.
 
 ---
 

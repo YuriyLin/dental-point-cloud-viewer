@@ -1,7 +1,5 @@
 {
-  "name": "CHOICE Biotech - AI Dental Aesthetics",
-  "description": "Enterprise-grade AI dental technology platform featuring automated tooth segmentation and aesthetic analysis.",
-  "requestFramePermissions": [
-    "camera"
-  ]
+  "name": "Dental Point Cloud Viewer",
+  "description": "Local workbench for inspecting 3D intraoral scan segmentation predictions.",
+  "requestFramePermissions": []
 }
